@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="description"
+      content="Harness the power of AI and machine learning to identify the most suitable crops for your land and maximize agricultural productivity."
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <link
+      rel="stylesheet"
+      href="{{url_for('static', filename='css/output-style.css')}}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{url_for('static', filename='css/custom-style.css')}}"
+    />
+    <title>{% block title %} Fasal Guru {% endblock %}</title>
+  </head>
+  <body class="bg-black">
+    {% include "components/header.html" %}
+    <main class="pt-20">
+      {% block content %}{% endblock %}
+      <div>
+        {% with messages = get_flashed_messages(with_categories=true) %} {% if
+        messages %}
+        <ul class="flashes">
+          {% for category, message in messages %}
+          <li class="{{ category }}">{{ message }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %} {% endwith %}
+      </div>
+    </main>
+    {% include "components/footer.html" %}
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+      lucide.createIcons({
+        attrs : {
+            class : ["icon"],
+            "stroke-width" : 2,
+            stroke : "#333"
+        }
+      });
+    </script>
+  </body>
+</html>

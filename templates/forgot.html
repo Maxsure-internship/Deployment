@@ -1,0 +1,124 @@
+{% extends "layout.html" %}
+{% block title %} Maxsure | Reset Password {% endblock %}
+{% block content %}
+
+<div class="min-h-screen bg-[#0d1117] flex items-center justify-center px-4 relative overflow-hidden">
+
+  <!-- Background grid -->
+  <div
+    class="absolute inset-0 opacity-[0.03]"
+    style="background-image: linear-gradient(#00c853 1px, transparent 1px), linear-gradient(90deg, #00c853 1px, transparent 1px); background-size: 40px 40px;"
+  ></div>
+
+  <!-- Ambient glow — amber tint to signal a different state from login -->
+  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-[#ff9800]/5 blur-3xl pointer-events-none"></div>
+
+  <!-- Card -->
+  <div class="w-full max-w-sm relative z-10">
+
+    <!-- Top label -->
+    <div class="flex items-center justify-center gap-2 mb-6">
+      <span class="w-1.5 h-1.5 rounded-full bg-[#ff9800] animate-pulse"></span>
+      <span class="text-[#ff9800] font-mono text-[10px] tracking-[0.3em] uppercase">Account Recovery</span>
+    </div>
+
+    <div class="bg-[#0d1117] border border-[#1e2d3d] rounded-lg overflow-hidden">
+
+      <!-- Card header bar -->
+      <div class="flex items-center justify-between px-4 py-2.5 bg-[#0a0f14] border-b border-[#1e2d3d]">
+        <div class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#ef5350]/40 border border-[#ef5350]/60"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-[#ff9800]/40 border border-[#ff9800]/60"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-[#00c853]/40 border border-[#00c853]/60"></span>
+        </div>
+        <span class="text-[#546e7a] font-mono text-[10px] tracking-widest">recovery.maxsure.io</span>
+        <div class="flex items-center gap-1">
+          <i data-lucide="shield-check" class="w-3 h-3 text-[#00c853]"></i>
+          <span class="text-[#546e7a] font-mono text-[9px]">TLS</span>
+        </div>
+      </div>
+
+      <div class="p-7">
+
+        <!-- Icon + heading -->
+        <div class="flex flex-col items-center mb-7">
+          <div class="relative flex items-center justify-center w-12 h-12 rounded bg-[#0a0f14] border border-[#1e2d3d] mb-4">
+            <i data-lucide="key-round" class="w-5 h-5 text-[#ff9800]"></i>
+            <!-- small alert badge -->
+            <span class="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 rounded-full bg-[#ff9800] flex items-center justify-center">
+              <i data-lucide="alert-triangle" class="w-2 h-2 text-[#0d1117]"></i>
+            </span>
+          </div>
+          <h1 class="text-white font-mono font-bold text-xl tracking-wider">RESET ACCESS</h1>
+          <p class="text-[#546e7a] font-mono text-[10px] text-center leading-relaxed mt-2 max-w-[220px]">
+            Enter your registered e-mail. A secure reset link will be dispatched.
+          </p>
+        </div>
+
+        <!-- Info strip -->
+        <div class="flex items-start gap-2.5 bg-[#ff9800]/5 border border-[#ff9800]/20 rounded px-3 py-2.5 mb-5">
+          <i data-lucide="info" class="w-3.5 h-3.5 text-[#ff9800] shrink-0 mt-0.5"></i>
+          <p class="text-[#ff9800]/70 font-mono text-[10px] leading-relaxed">
+            Link expires in <span class="text-[#ff9800] font-semibold">15 minutes</span>. Check your spam folder if it doesn't arrive.
+          </p>
+        </div>
+
+        <!-- Form -->
+        <form method="POST" action="{{url_for('auth.forgot')}}" class="flex flex-col gap-4">
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-[#546e7a] font-mono text-[10px] tracking-widest uppercase">Registered E-mail</label>
+            <div class="flex items-center bg-[#0a0f14] border border-[#1e2d3d] focus-within:border-[#ff9800]/60 rounded px-3 py-2.5 gap-2.5 transition-colors duration-150">
+              <i data-lucide="mail" class="w-3.5 h-3.5 text-[#546e7a] shrink-0"></i>
+              <input
+                type="email"
+                name="mail"
+                placeholder="trader@example.com"
+                class="w-full bg-transparent text-white font-mono text-sm placeholder:text-[#2a3a4a] outline-none"
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            class="w-full mt-1 flex items-center justify-center gap-2 bg-[#ff9800] hover:bg-[#ffa726] active:scale-[0.98] text-[#0d1117] font-mono font-bold text-xs tracking-widest uppercase py-3 rounded transition-all duration-150"
+          >
+            <i data-lucide="send" class="w-3.5 h-3.5"></i>
+            Dispatch Reset Link
+          </button>
+
+        </form>
+
+        <!-- Back to login -->
+        <div class="flex items-center justify-center mt-5">
+          <a
+            href="{{url_for('auth.login')}}"
+            class="flex items-center gap-1.5 text-[#546e7a] hover:text-white font-mono text-xs transition-colors duration-150"
+          >
+            <i data-lucide="arrow-left" class="w-3 h-3"></i>
+            Back to login
+          </a>
+        </div>
+
+      </div>
+
+      <!-- Card footer -->
+      <div class="px-4 py-2.5 bg-[#0a0f14] border-t border-[#1e2d3d] flex items-center justify-between">
+        <div class="flex items-center gap-1">
+          <i data-lucide="lock" class="w-3 h-3 text-[#546e7a]"></i>
+          <span class="text-[#546e7a] font-mono text-[9px]">End-to-end encrypted</span>
+        </div>
+        <span class="text-[#2a3a4a] font-mono text-[9px]">v2.4.1</span>
+      </div>
+
+    </div>
+
+    <!-- Back note -->
+    <p class="text-center text-[#2a3a4a] font-mono text-[10px] mt-4 tracking-wider">
+      PROTOTYPE · STOCK TRACKING & EMAIL NOTIFICATIONS
+    </p>
+
+  </div>
+</div>
+
+{% endblock %}

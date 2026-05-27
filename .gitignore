@@ -1,0 +1,8 @@
+node_modules
+flask_session
+instance
+*.db
+package-lock.json
+.env
+.venv
+__pycache__

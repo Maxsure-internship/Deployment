@@ -1,0 +1,198 @@
+{% extends "layout.html" %} 
+{% block title %} Fasal Guru | Trading Terminal {% endblock %} 
+{% block content %}
+
+<div class="h-screen w-full bg-[#1c2030] text-[#d1d4dc] flex flex-col font-sans overflow-hidden">
+  
+  <div class="flex flex-1 overflow-hidden w-full">
+   
+
+    <section class="flex-1 bg-[#131722] relative p-1">
+      <div id="chart" class="w-full h-full"></div>
+    </section>
+
+    <aside class="w-80 bg-[#131722] border-l border-[#2a2e39] hidden lg:flex flex-col">
+      <div class="p-4 border-b border-[#2a2e39]">
+        <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400">Market Summary</h3>
+      </div>
+      <div class="p-4 space-y-4 flex-1 overflow-y-auto text-sm">
+        <div class="flex justify-between items-center bg-[#1c2030] p-3 rounded border border-[#2a2e39]">
+          <div class="px-3 py-2">
+            <p class="text-xs text-gray-400 font-medium">Last Price</p>
+            <p id="display-price" class="text-xl font-bold text-white">Calculating...</p>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="bg-[#1c2030] py-2 px-3 rounded border border-[#2a2e39]">
+            <span class="text-gray-400 block mb-1 p-3">Session High</span>
+            <span id="session-high" class="text-white font-mono font-bold p-3">-</span>
+          </div>
+          <div class="bg-[#1c2030] py-2 px-3 rounded border border-[#2a2e39]">
+            <span class="text-gray-400 block mb-1">Session Low</span>
+            <span id="session-low" class="text-white font-mono font-bold">-</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<script>
+  var socket = io();
+  let candleSeries = [];
+  
+  // Track high/low stats for the panel layout
+  let sessionHigh = -Infinity;
+  let sessionLow = Infinity;
+
+  var options = {
+    chart: {
+      type: "candlestick",
+      height: "100%", // Fit container dynamically
+      width: "100%",
+      background: "#131722", // Exact TradingView background
+      fontFamily: "Inter, system-ui, sans-serif",
+      toolbar: {
+        show: true,
+        tools: {
+          download: false,
+          selection: true,
+          zoom: true,
+          zoomin: true,
+          zoomout: true,
+          pan: true,
+          reset: true
+        }
+      },
+      sparkline: {
+        enabled: false
+      }
+    },
+    theme: {
+      mode: "dark",
+    },
+    stroke: {
+      curve: 'smooth',
+      width: [1, 1]
+    },
+    series: [
+      {
+        data: candleSeries,
+      },
+    ],
+    xaxis: {
+      type: "datetime",
+      labels: {
+        style: {
+          colors: "#868993",
+          fontSize: "11px"
+        }
+      },
+      axisBorder: {
+        color: "#2a2e39"
+      },
+      axisTicks: {
+        color: "#2a2e39"
+      }
+    },
+    yaxis: {
+      position: 'right', // TradingView defaults scales to the right side
+      labels: {
+        style: {
+          colors: "#868993",
+          fontSize: "11px"
+        },
+        formatter: function (val) {
+          return val.toFixed(2);
+        }
+      },
+      axisBorder: {
+        show: true,
+        color: "#2a2e39"
+      },
+      tooltip: {
+        enabled: true,
+      },
+    },
+    grid: {
+      borderColor: "#2a2e39", // Grid styling to resemble charts lines
+      strokeDashArray: 4,
+      xaxis: {
+        lines: {
+          show: true
+        }
+      },
+      yaxis: {
+        lines: {
+          show: true
+        }
+      }
+    },
+    plotOptions: {
+      candlestick: {
+        colors: {
+          upward: "#089981",    // TradingView Pro Green
+          downward: "#f23645",  // TradingView Pro Red
+        },
+        wick: {
+          useFillColor: true   // Solid matching wicks look vastly cleaner
+        }
+      },
+    },
+  };
+
+  var chart = new ApexCharts(document.querySelector("#chart"), options);
+  chart.render();
+
+  socket.on("stock_update", (message) => {
+  console.log("Raw Socket Message:", message);
+
+  const price = Number(message.price);
+  if (isNaN(price)) return; // Guard clause against corrupted data
+
+  // 1. Fix the fake OHLC generation logic to make sure they are mathematically sound
+  const open = price - (Math.random() - 0.5) * 4;
+  const close = price;
+  
+  // High MUST be higher than both open and close
+  const high = Math.max(open, close) + (Math.random() * 2);
+  // Low MUST be lower than both open and close
+  const low = Math.min(open, close) - (Math.random() * 2);
+
+  // Update live panel UI element
+  document.getElementById("display-price").innerText = price.toFixed(2);
+
+  // Monitor high/low bounds for the sidebar panel
+  if (high > sessionHigh) { sessionHigh = high; document.getElementById("session-high").innerText = sessionHigh.toFixed(2); }
+  if (low < sessionLow) { sessionLow = low; document.getElementById("session-low").innerText = sessionLow.toFixed(2); }
+
+  // 2. CRITICAL: Use Number() or parseFloat() to ensure these are actual numeric primitives, not strings!
+  const candle = {
+    x: new Date(parseInt(message.time)).getTime(), 
+    y: [
+      Number(open.toFixed(2)), 
+      Number(high.toFixed(2)), 
+      Number(low.toFixed(2)), 
+      Number(close.toFixed(2))
+    ],
+  };
+
+  candleSeries.push(candle);
+
+  // Maintain standard clean buffer size
+  if (candleSeries.length > 200) {
+    candleSeries.shift();
+  }
+
+  chart.updateSeries([
+    {
+      data: candleSeries,
+    },
+  ]);
+});
+</script>
+{% endblock %}

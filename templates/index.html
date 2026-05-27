@@ -1,0 +1,183 @@
+{% extends "layout.html" %}
+{% block title %} Maxsure | Home {% endblock %}
+{% block content %}
+{% include "components/header.html" %}
+
+<!-- HERO SECTION -->
+<section
+  class="min-h-screen relative z-0 overflow-hidden bg-[#0d1117]"
+  style="background-image: url('{{ url_for('static', filename='hero.png') }}'); background-size: cover; background-position: center;"
+>
+  <!-- Dark overlay with directional gradient -->
+  <div class="absolute inset-0 z-0 bg-gradient-to-r from-[#0d1117] via-[#0d1117]/90 to-transparent"></div>
+
+  <!-- Subtle grid overlay for terminal feel -->
+  <div
+    class="absolute inset-0 z-0 opacity-[0.04]"
+    style="background-image: linear-gradient(#00c853 1px, transparent 1px), linear-gradient(90deg, #00c853 1px, transparent 1px); background-size: 40px 40px;"
+  ></div>
+
+  <!-- Top status bar -->
+  <div class="absolute top-0 left-0 right-0 z-20 flex items-center gap-6 px-8 lg:px-32 py-3 border-b border-[#1e2d3d] bg-[#0d1117]/80 backdrop-blur-sm">
+    <div class="flex items-center gap-1.5">
+      <span class="w-1.5 h-1.5 rounded-full bg-[#00c853] animate-pulse"></span>
+      <span class="text-[#00c853] text-[10px] font-mono font-semibold tracking-widest uppercase">Market Open</span>
+    </div>
+    <span class="text-[#2a3a4a] text-xs font-mono">|</span>
+    <span class="text-[#546e7a] text-[10px] font-mono tracking-wider">NSE · BSE · NASDAQ · NYSE</span>
+    <span class="ml-auto text-[#546e7a] text-[10px] font-mono tracking-wider" id="live-time">--:--:-- IST</span>
+  </div>
+
+  <!-- Main content -->
+  <div class="h-full flex flex-col justify-center items-start gap-6 px-8 lg:px-32 relative z-10 max-w-2xl">
+
+    <!-- Brand tag -->
+    <div class="flex items-center gap-2">
+      <span class="text-[#00c853] font-mono text-xs tracking-[0.3em] uppercase font-semibold">MAXSURE</span>
+      <span class="text-[#1e2d3d] font-mono text-xs">///</span>
+      <span class="text-[#546e7a] font-mono text-xs tracking-widest">v2.4.1</span>
+    </div>
+
+    <!-- Hero heading -->
+    <div>
+      <h1 class="text-white font-mono font-black leading-none tracking-tight" style="font-size: clamp(2.5rem, 5vw, 4rem);">
+        Look<br>
+        <span class="text-[#00c853]">First.</span>
+      </h1>
+      <p class="text-[#546e7a] font-mono text-sm mt-3 leading-relaxed max-w-sm">
+        Smart stock tracking & real-time notification platform for serious investors.
+      </p>
+    </div>
+
+    <!-- Ticker cards -->
+    <div class="flex flex-wrap gap-2 mt-2">
+
+      <!-- BTC -->
+      <div class="flex items-center gap-3 bg-[#111820] border border-[#1e2d3d] rounded px-3 py-2 hover:border-[#00c853]/40 transition-colors duration-200">
+        <div class="flex items-center justify-center w-7 h-7 rounded bg-[#1a2230] border border-[#1e2d3d]">
+          <i data-lucide="bitcoin" class="w-3.5 h-3.5 text-[#f7931a]"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-white font-mono font-bold text-xs">BTC</span>
+            <span class="text-[#00c853] font-mono text-[9px] font-semibold bg-[#00c853]/10 px-1 py-0.5 rounded">▲ 2.14%</span>
+          </div>
+          <span class="text-[#546e7a] font-mono text-[10px]">38,997.00 USD</span>
+        </div>
+      </div>
+
+      <!-- INR -->
+      <div class="flex items-center gap-3 bg-[#111820] border border-[#1e2d3d] rounded px-3 py-2 hover:border-[#00c853]/40 transition-colors duration-200">
+        <div class="flex items-center justify-center w-7 h-7 rounded bg-[#1a2230] border border-[#1e2d3d]">
+          <i data-lucide="indian-rupee" class="w-3.5 h-3.5 text-[#ff9800]"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-white font-mono font-bold text-xs">INR</span>
+            <span class="text-[#ef5350] font-mono text-[9px] font-semibold bg-[#ef5350]/10 px-1 py-0.5 rounded">▼ 0.31%</span>
+          </div>
+          <span class="text-[#546e7a] font-mono text-[10px]">0.0108 USD</span>
+        </div>
+      </div>
+
+      <!-- GBP -->
+      <div class="flex items-center gap-3 bg-[#111820] border border-[#1e2d3d] rounded px-3 py-2 hover:border-[#00c853]/40 transition-colors duration-200">
+        <div class="flex items-center justify-center w-7 h-7 rounded bg-[#1a2230] border border-[#1e2d3d]">
+          <i data-lucide="pound-sterling" class="w-3.5 h-3.5 text-[#5c6bc0]"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-white font-mono font-bold text-xs">GBP</span>
+            <span class="text-[#00c853] font-mono text-[9px] font-semibold bg-[#00c853]/10 px-1 py-0.5 rounded">▲ 0.07%</span>
+          </div>
+          <span class="text-[#546e7a] font-mono text-[10px]">1.1200 USD</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Feature list — terminal style -->
+    <div class="border border-[#1e2d3d] rounded bg-[#0a0f14]/60 backdrop-blur-sm px-4 py-3 mt-1 w-full max-w-sm">
+      <div class="flex items-center gap-2 mb-3 pb-2 border-b border-[#1e2d3d]">
+        <i data-lucide="terminal" class="w-3 h-3 text-[#00c853]"></i>
+        <span class="text-[#00c853] font-mono text-[10px] tracking-widest uppercase">System Capabilities</span>
+      </div>
+      <ul class="flex flex-col gap-2">
+        <li class="flex items-start gap-2">
+          <span class="text-[#00c853] font-mono text-xs mt-0.5 shrink-0">→</span>
+          <span class="text-[#8899aa] font-mono text-xs leading-relaxed">Live market updates & real-time price tracking</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="text-[#00c853] font-mono text-xs mt-0.5 shrink-0">→</span>
+          <span class="text-[#8899aa] font-mono text-xs leading-relaxed">Automated email alerts for price thresholds</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <span class="text-[#00c853] font-mono text-xs mt-0.5 shrink-0">→</span>
+          <span class="text-[#8899aa] font-mono text-xs leading-relaxed">Never miss important market movements again</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- CTA buttons -->
+    <div class="flex items-center gap-3 mt-2">
+      <a href="#" class="flex items-center gap-2 bg-[#00c853] hover:bg-[#00e05a] text-[#0d1117] font-mono font-bold text-xs px-5 py-2.5 rounded transition-colors duration-150 tracking-wider uppercase">
+        <i data-lucide="activity" class="w-3.5 h-3.5"></i>
+        Track Stocks
+      </a>
+      <a href="#" class="flex items-center gap-2 border border-[#1e2d3d] hover:border-[#546e7a] text-[#546e7a] hover:text-[#8899aa] font-mono text-xs px-5 py-2.5 rounded transition-colors duration-150 tracking-wider uppercase">
+        <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+        Learn More
+      </a>
+    </div>
+
+  </div>
+
+  <!-- Bottom data bar -->
+  <div class="absolute bottom-0 left-0 right-0 z-20 flex items-center gap-8 px-8 lg:px-32 py-2 border-t border-[#1e2d3d] bg-[#0d1117]/80 backdrop-blur-sm overflow-x-auto">
+    <div class="flex items-center gap-6 shrink-0">
+      <span class="text-[#546e7a] font-mono text-[10px] tracking-widest uppercase shrink-0">Live</span>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <span class="text-[#8899aa] font-mono text-[10px]">NIFTY 50</span>
+        <span class="text-white font-mono text-[10px] font-semibold">22,147.90</span>
+        <span class="text-[#00c853] font-mono text-[9px]">+0.42%</span>
+      </div>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <span class="text-[#8899aa] font-mono text-[10px]">SENSEX</span>
+        <span class="text-white font-mono text-[10px] font-semibold">73,088.33</span>
+        <span class="text-[#ef5350] font-mono text-[9px]">−0.18%</span>
+      </div>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <span class="text-[#8899aa] font-mono text-[10px]">S&amp;P 500</span>
+        <span class="text-white font-mono text-[10px] font-semibold">5,304.72</span>
+        <span class="text-[#00c853] font-mono text-[9px]">+0.87%</span>
+      </div>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <span class="text-[#8899aa] font-mono text-[10px]">NASDAQ</span>
+        <span class="text-white font-mono text-[10px] font-semibold">16,831.48</span>
+        <span class="text-[#00c853] font-mono text-[9px]">+1.03%</span>
+      </div>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <span class="text-[#8899aa] font-mono text-[10px]">GOLD</span>
+        <span class="text-white font-mono text-[10px] font-semibold">2,331.40</span>
+        <span class="text-[#ef5350] font-mono text-[9px]">−0.55%</span>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<script>
+  // Live clock
+  function updateClock() {
+    const now = new Date();
+    const h = String(now.getHours()).padStart(2, '0');
+    const m = String(now.getMinutes()).padStart(2, '0');
+    const s = String(now.getSeconds()).padStart(2, '0');
+    const el = document.getElementById('live-time');
+    if (el) el.textContent = `${h}:${m}:${s} IST`;
+  }
+  updateClock();
+  setInterval(updateClock, 1000);
+</script>
+
+{% endblock %}
