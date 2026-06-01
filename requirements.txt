@@ -1,4 +1,4 @@
-﻿beautifulsoup4==4.14.3
+beautifulsoup4==4.14.3
 bidict==0.23.1
 blinker==1.9.0
 cachelib==0.14.0
