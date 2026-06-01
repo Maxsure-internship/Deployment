@@ -4,6 +4,7 @@ from flask_login import LoginManager
 from flask_socketio import SocketIO
 import yfinance as yf
 from models import User, Stock, db
+from datetime import datetime
 
 from threading import Thread
 from queue import Queue
@@ -27,7 +28,7 @@ Session(app)
 # Database
 from models import db
 
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///users.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DB_URI", "")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 
@@ -76,7 +77,6 @@ socketio = SocketIO(app)
 def stock_stream():
     def handler(message):
         # Store new stock in database
-        # print(message)
         stock_queue.put(
             {
                 "symbol": message["id"],
@@ -98,7 +98,11 @@ def stock_stream():
         ws.listen(handler)
 
 
+# Max records stored in the database at any given point of time
+MAX_RECORDS = 100
+
 from queue import Empty
+
 
 def db_queue_worker():
     with app.app_context():
@@ -107,20 +111,21 @@ def db_queue_worker():
         while True:
             try:
                 stock_data = stock_queue.get(timeout=1)
-                # print("QUEUE DATA:", stock_data)
                 stock = Stock(**stock_data)
                 buffer.append(stock)
 
-                if len(buffer) >= 100:
+                if len(buffer) >= MAX_RECORDS:
                     count = Stock.query.count()
 
                     # If there are more than 500 records delete
-                    if count >= 500:
+                    if count >= MAX_RECORDS:
                         db.session.query(Stock).delete()
-                        db.session.commit()
+                        db.commit()
 
                     # Bulk save records to the database
                     db.session.bulk_save_objects(buffer)
+
+                    # commit to saving bulk objects as well as deleting prior data
                     db.session.commit()
 
                     buffer.clear()
@@ -131,6 +136,7 @@ def db_queue_worker():
             except Exception as e:
                 db.session.rollback()
 
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
@@ -139,10 +145,14 @@ if __name__ == "__main__":
     stock_stream_thread = Thread(target=stock_stream, daemon=True)
     stock_stream_thread.start()
 
-
     # DB worker
     db_worker = Thread(target=db_queue_worker, daemon=True)
     db_worker.start()
+
+    # registering filters
+    @app.template_filter("datetime_from_timestamp")
+    def datetime_from_timestamp(ts):
+        return datetime.fromtimestamp(ts).strftime("%d %b, %H:%M")
 
     socketio.run(
         app,

@@ -1,50 +1,157 @@
-{% extends "layout.html" %} 
-{% block title %} Fasal Guru | Trading Terminal {% endblock %} 
-{% block content %}
+{% extends "layout.html" %} {% block title %} Fasal Guru | Trading Terminal {%
+endblock %} {% block content %}
 
-<div class="h-screen w-full bg-[#1c2030] text-[#d1d4dc] flex flex-col font-sans overflow-hidden">
-  
+<div
+  class="max-h-80 w-full bg-[#1c2030] text-[#d1d4dc] flex flex-col font-sans overflow-scroll"
+>
+  <div class="flex flex-1 w-full">
+    <!-- Historical Data Table -->
+    <section
+      class="w-full bg-[#131722] border-t border-[#2a2e39] overflow-hidden"
+      style="max-height: 320px"
+    >
+      <div
+        class="px-4 py-3 border-b border-[#2a2e39] flex items-center justify-between"
+      >
+        <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400">
+          Historical Data
+        </h3>
+        <span class="text-xs text-gray-500">{{ stocks|length }} records</span>
+      </div>
+      <div class="overflow-y-auto overflow-x-auto" style="max-height: 270px">
+        <table
+          class="w-full text-xs border-collapse"
+          style="table-layout: fixed"
+        >
+          <thead class="sticky top-0 bg-[#1c2030] z-10">
+            <tr>
+              <th
+                class="px-4 py-2 text-left text-gray-400 font-medium border-b border-[#2a2e39] w-20"
+              >
+                Symbol
+              </th>
+              <th
+                class="px-4 py-2 text-right text-gray-400 font-medium border-b border-[#2a2e39] w-24"
+              >
+                Price
+              </th>
+              <th
+                class="px-4 py-2 text-right text-gray-400 font-medium border-b border-[#2a2e39] w-24"
+              >
+                Change
+              </th>
+              <th
+                class="px-4 py-2 text-right text-gray-400 font-medium border-b border-[#2a2e39] w-24"
+              >
+                Change %
+              </th>
+              <th
+                class="px-4 py-2 text-left text-gray-400 font-medium border-b border-[#2a2e39] w-16"
+              >
+                Exchange
+              </th>
+              <th
+                class="px-4 py-2 text-right text-gray-400 font-medium border-b border-[#2a2e39] w-36"
+              >
+                Timestamp
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for stock in stocks %} {% set up = stock.change >= 0 %}
+            <tr
+              class="border-b border-[#2a2e39] hover:bg-[#1e2535] transition-colors {% if loop.index is odd %}bg-[#131722]{% else %}bg-[#161b27]{% endif %}"
+            >
+              <td
+                class="px-4 py-2 text-white font-bold font-mono tracking-wide"
+              >
+                {{ stock.symbol }}
+              </td>
+              <td class="px-4 py-2 text-right font-mono text-white">
+                {{ "%.2f"|format(stock.price) }}
+              </td>
+              <td
+                class="px-4 py-2 text-right font-mono {% if up %}text-[#089981]{% else %}text-[#f23645]{% endif %}"
+              >
+                {% if up %}▲{% else %}▼{% endif %} {{
+                "%.2f"|format(stock.change|abs) }}
+              </td>
+              <td
+                class="px-4 py-2 text-right font-mono {% if up %}text-[#089981]{% else %}text-[#f23645]{% endif %}"
+              >
+                {% if up %}▲{% else %}▼{% endif %} {{
+                "%.2f"|format(stock.change_percent|abs) }}%
+              </td>
+              <td class="px-4 py-2 text-gray-400">{{ stock.exchange }}</td>
+              <td
+                class="px-4 py-2 text-right font-mono text-gray-500 text-[11px]"
+              >
+                {{ (stock.timestamp / 1000)|int|datetime_from_timestamp }}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</div>
+<div
+  class="h-screen w-full bg-[#1c2030] text-[#d1d4dc] flex flex-col font-sans overflow-hidden"
+>
   <div class="flex flex-1 overflow-hidden w-full">
-   
-
     <section class="flex-1 bg-[#131722] relative p-1">
       <div id="chart" class="w-full h-full"></div>
     </section>
 
-    <aside class="w-80 bg-[#131722] border-l border-[#2a2e39] hidden lg:flex flex-col">
+    <aside
+      class="w-80 bg-[#131722] border-l border-[#2a2e39] hidden lg:flex flex-col"
+    >
       <div class="p-4 border-b border-[#2a2e39]">
-        <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400">Market Summary</h3>
+        <h3 class="text-sm font-bold uppercase tracking-wider text-gray-400">
+          Market Summary
+        </h3>
       </div>
       <div class="p-4 space-y-4 flex-1 overflow-y-auto text-sm">
-        <div class="flex justify-between items-center bg-[#1c2030] p-3 rounded border border-[#2a2e39]">
+        <div
+          class="flex justify-between items-center bg-[#1c2030] p-3 rounded border border-[#2a2e39]"
+        >
           <div class="px-3 py-2">
             <p class="text-xs text-gray-400 font-medium">Last Price</p>
-            <p id="display-price" class="text-xl font-bold text-white">Calculating...</p>
+            <p id="display-price" class="text-xl font-bold text-white">
+              Calculating...
+            </p>
           </div>
         </div>
-        
+
         <div class="grid grid-cols-2 gap-2 text-xs">
           <div class="bg-[#1c2030] py-2 px-3 rounded border border-[#2a2e39]">
             <span class="text-gray-400 block mb-1 p-3">Session High</span>
-            <span id="session-high" class="text-white font-mono font-bold p-3">-</span>
+            <span id="session-high" class="text-white font-mono font-bold p-3"
+              >-</span
+            >
           </div>
           <div class="bg-[#1c2030] py-2 px-3 rounded border border-[#2a2e39]">
             <span class="text-gray-400 block mb-1">Session Low</span>
-            <span id="session-low" class="text-white font-mono font-bold">-</span>
+            <span id="session-low" class="text-white font-mono font-bold"
+              >-</span
+            >
           </div>
         </div>
       </div>
     </aside>
-
   </div>
 </div>
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+/>
 
 <script>
   var socket = io();
   let candleSeries = [];
-  
+
   // Track high/low stats for the panel layout
   let sessionHigh = -Infinity;
   let sessionLow = Infinity;
@@ -65,19 +172,19 @@
           zoomin: true,
           zoomout: true,
           pan: true,
-          reset: true
-        }
+          reset: true,
+        },
       },
       sparkline: {
-        enabled: false
-      }
+        enabled: false,
+      },
     },
     theme: {
       mode: "dark",
     },
     stroke: {
-      curve: 'smooth',
-      width: [1, 1]
+      curve: "smooth",
+      width: [1, 1],
     },
     series: [
       {
@@ -89,30 +196,30 @@
       labels: {
         style: {
           colors: "#868993",
-          fontSize: "11px"
-        }
+          fontSize: "11px",
+        },
       },
       axisBorder: {
-        color: "#2a2e39"
+        color: "#2a2e39",
       },
       axisTicks: {
-        color: "#2a2e39"
-      }
+        color: "#2a2e39",
+      },
     },
     yaxis: {
-      position: 'right', // TradingView defaults scales to the right side
+      position: "right", // TradingView defaults scales to the right side
       labels: {
         style: {
           colors: "#868993",
-          fontSize: "11px"
+          fontSize: "11px",
         },
         formatter: function (val) {
           return val.toFixed(2);
-        }
+        },
       },
       axisBorder: {
         show: true,
-        color: "#2a2e39"
+        color: "#2a2e39",
       },
       tooltip: {
         enabled: true,
@@ -123,24 +230,24 @@
       strokeDashArray: 4,
       xaxis: {
         lines: {
-          show: true
-        }
+          show: true,
+        },
       },
       yaxis: {
         lines: {
-          show: true
-        }
-      }
+          show: true,
+        },
+      },
     },
     plotOptions: {
       candlestick: {
         colors: {
-          upward: "#089981",    // TradingView Pro Green
-          downward: "#f23645",  // TradingView Pro Red
+          upward: "#089981", // TradingView Pro Green
+          downward: "#f23645", // TradingView Pro Red
         },
         wick: {
-          useFillColor: true   // Solid matching wicks look vastly cleaner
-        }
+          useFillColor: true, // Solid matching wicks look vastly cleaner
+        },
       },
     },
   };
@@ -149,50 +256,57 @@
   chart.render();
 
   socket.on("stock_update", (message) => {
-  console.log("Raw Socket Message:", message);
+    console.log("Raw Socket Message:", message);
 
-  const price = Number(message.price);
-  if (isNaN(price)) return; // Guard clause against corrupted data
+    const price = Number(message.price);
+    if (isNaN(price)) return; // Guard clause against corrupted data
 
-  // 1. Fix the fake OHLC generation logic to make sure they are mathematically sound
-  const open = price - (Math.random() - 0.5) * 4;
-  const close = price;
-  
-  // High MUST be higher than both open and close
-  const high = Math.max(open, close) + (Math.random() * 2);
-  // Low MUST be lower than both open and close
-  const low = Math.min(open, close) - (Math.random() * 2);
+    // 1. Fix the fake OHLC generation logic to make sure they are mathematically sound
+    const open = price - (Math.random() - 0.5) * 4;
+    const close = price;
 
-  // Update live panel UI element
-  document.getElementById("display-price").innerText = price.toFixed(2);
+    // High MUST be higher than both open and close
+    const high = Math.max(open, close) + Math.random() * 2;
+    // Low MUST be lower than both open and close
+    const low = Math.min(open, close) - Math.random() * 2;
 
-  // Monitor high/low bounds for the sidebar panel
-  if (high > sessionHigh) { sessionHigh = high; document.getElementById("session-high").innerText = sessionHigh.toFixed(2); }
-  if (low < sessionLow) { sessionLow = low; document.getElementById("session-low").innerText = sessionLow.toFixed(2); }
+    // Update live panel UI element
+    document.getElementById("display-price").innerText = price.toFixed(2);
 
-  // 2. CRITICAL: Use Number() or parseFloat() to ensure these are actual numeric primitives, not strings!
-  const candle = {
-    x: new Date(parseInt(message.time)).getTime(), 
-    y: [
-      Number(open.toFixed(2)), 
-      Number(high.toFixed(2)), 
-      Number(low.toFixed(2)), 
-      Number(close.toFixed(2))
-    ],
-  };
+    // Monitor high/low bounds for the sidebar panel
+    if (high > sessionHigh) {
+      sessionHigh = high;
+      document.getElementById("session-high").innerText =
+        sessionHigh.toFixed(2);
+    }
+    if (low < sessionLow) {
+      sessionLow = low;
+      document.getElementById("session-low").innerText = sessionLow.toFixed(2);
+    }
 
-  candleSeries.push(candle);
+    // 2. CRITICAL: Use Number() or parseFloat() to ensure these are actual numeric primitives, not strings!
+    const candle = {
+      x: new Date(parseInt(message.time)).getTime(),
+      y: [
+        Number(open.toFixed(2)),
+        Number(high.toFixed(2)),
+        Number(low.toFixed(2)),
+        Number(close.toFixed(2)),
+      ],
+    };
 
-  // Maintain standard clean buffer size
-  if (candleSeries.length > 200) {
-    candleSeries.shift();
-  }
+    candleSeries.push(candle);
 
-  chart.updateSeries([
-    {
-      data: candleSeries,
-    },
-  ]);
-});
+    // Maintain standard clean buffer size
+    if (candleSeries.length > 200) {
+      candleSeries.shift();
+    }
+
+    chart.updateSeries([
+      {
+        data: candleSeries,
+      },
+    ]);
+  });
 </script>
 {% endblock %}
