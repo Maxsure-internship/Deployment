@@ -153,10 +153,11 @@ stock_stream_thread.start()
 db_worker = Thread(target=db_queue_worker, daemon=True)
 db_worker.start()
 
-socketio.run(
-    app,
-    host="0.0.0.0",
-    port=8000,
-    debug=os.environ.get("ENV", "development") == "development",
-)
+if __name__ == "__main__":
+    socketio.run(
+        app,
+        host="0.0.0.0",
+        port=8000,
+        debug=os.environ.get("ENV", "development") == "development",
+    )
 
