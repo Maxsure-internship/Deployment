@@ -140,9 +140,10 @@ with app.app_context():
     db.create_all()
 
 # registering filters
-@app.template_filter("datetime_from_timestamp")
 def datetime_from_timestamp(ts):
     return datetime.fromtimestamp(ts).strftime("%d %b, %H:%M")
+
+app.jinja_env.filters["datetime_from_timestamp"] = datetime_from_timestamp
 
 if __name__ == "__main__":
     # Stock Stream
