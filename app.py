@@ -145,18 +145,18 @@ def datetime_from_timestamp(ts):
 
 app.jinja_env.filters["datetime_from_timestamp"] = datetime_from_timestamp
 
-if __name__ == "__main__":
-    # Stock Stream
-    stock_stream_thread = Thread(target=stock_stream, daemon=True)
-    stock_stream_thread.start()
+# Stock Stream
+stock_stream_thread = Thread(target=stock_stream, daemon=True)
+stock_stream_thread.start()
 
-    # DB worker
-    db_worker = Thread(target=db_queue_worker, daemon=True)
-    db_worker.start()
+# DB worker
+db_worker = Thread(target=db_queue_worker, daemon=True)
+db_worker.start()
 
-    socketio.run(
-        app,
-        host="0.0.0.0",
-        port=8000,
-        debug=os.environ.get("ENV", "development") == "development",
-    )
+socketio.run(
+    app,
+    host="0.0.0.0",
+    port=8000,
+    debug=os.environ.get("ENV", "development") == "development",
+)
+
