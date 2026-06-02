@@ -136,10 +136,10 @@ def db_queue_worker():
             except Exception as e:
                 db.session.rollback()
 
+with app.app_context():
+    db.create_all()
 
 if __name__ == "__main__":
-    with app.app_context():
-        db.create_all()
 
     # Stock Stream
     stock_stream_thread = Thread(target=stock_stream, daemon=True)
