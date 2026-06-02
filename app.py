@@ -139,8 +139,12 @@ def db_queue_worker():
 with app.app_context():
     db.create_all()
 
-if __name__ == "__main__":
+# registering filters
+@app.template_filter("datetime_from_timestamp")
+def datetime_from_timestamp(ts):
+    return datetime.fromtimestamp(ts).strftime("%d %b, %H:%M")
 
+if __name__ == "__main__":
     # Stock Stream
     stock_stream_thread = Thread(target=stock_stream, daemon=True)
     stock_stream_thread.start()
@@ -148,11 +152,6 @@ if __name__ == "__main__":
     # DB worker
     db_worker = Thread(target=db_queue_worker, daemon=True)
     db_worker.start()
-
-    # registering filters
-    @app.template_filter("datetime_from_timestamp")
-    def datetime_from_timestamp(ts):
-        return datetime.fromtimestamp(ts).strftime("%d %b, %H:%M")
 
     socketio.run(
         app,
