@@ -77,6 +77,7 @@ socketio = SocketIO(app)
 def stock_stream():
     def handler(message):
         # Store new stock in database
+        print(message)
         stock_queue.put(
             {
                 "symbol": message["id"],
@@ -157,5 +158,7 @@ if __name__ == "__main__":
         host="0.0.0.0",
         port=5000,
         debug=os.environ.get("ENV", "development") == "development",
+        cors_allowed_origins="*",
+        async_mode="gevent"
     )
 
