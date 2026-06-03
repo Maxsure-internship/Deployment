@@ -1,3 +1,6 @@
+# app.py (Abbreviated to highlight structural changes)
+import os
+from dotenv import load_dotenv
 from flask import Flask
 from flask_session import Session
 from flask_login import LoginManager
@@ -6,151 +9,88 @@ import yfinance as yf
 from models import User, Stock, db
 from datetime import datetime
 
-from threading import Thread
-from queue import Queue
+# REMOVE standard Queue and Thread imports
+# from threading import Thread
+# from queue import Queue
 
 from extensions import mailer
 
-app = Flask(__name__)
-
-# Session Configuration
-from dotenv import load_dotenv
-import os
-
 load_dotenv()
 
-app.secret_key = os.environ.get("SESSION_KEY", "")
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_TYPE"] = "filesystem"
+app = Flask(__name__)
+# ... (Keep your database, session, login manager, and mailer setups exactly as they are) ...
 
-Session(app)
+# Initialize SocketIO without breaking context
+socketio = SocketIO(app, cors_allowed_origins="*")
 
-# Database
-from models import db
-
-app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DB_URI", "")
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-db.init_app(app)
-
-# Login manager
-login_manager = LoginManager()
-login_manager.init_app(app)
-login_manager.login_view = "auth.login"
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
-
-
-# Mailer setup
-app.config["MAIL_SERVER"] = "smtp.gmail.com"
-app.config["MAIL_PORT"] = int(os.environ.get("SMTP_PORT", 587))
-app.config["MAIL_USE_TLS"] = True
-
-
-app.config["MAIL_USERNAME"] = os.environ.get("SMTP_USER", "")
-app.config["MAIL_PASSWORD"] = os.environ.get("SMTP_PASS", "")
-
-mailer.init_app(app)
-
-# DB Job Queue
-stock_queue = Queue()
-
-# Register blueprints
-from auth import auth
-
-app.register_blueprint(auth, url_prefix="/registration")
-
-from home import home
-
-app.register_blueprint(home, url_prefix="/")
-
-from dashboard import dashboard
-
-app.register_blueprint(dashboard, url_prefix="/dashboard")
-
-# Socket IO
-socketio = SocketIO(app)
-
+# REPLACE queue.Queue with SocketIO's eventlet/gevent safe queue wrapper
+stock_queue = socketio.queue.Queue() 
 
 def stock_stream():
     def handler(message):
-        # Store new stock in database
-        stock_queue.put(
-            {
-                "symbol": message["id"],
-                "price": message["price"],
-                "timestamp": message["time"],
-                "exchange": message["exchange"],
-                "quote_type": message["quote_type"],
-                "change_percent": message["change_percent"],
-                "change": message["change"],
-                "price_hint": message["price_hint"],
-            }
-        )
-
-        # Send the new stock to
+        stock_queue.put({
+            "symbol": message["id"],
+            "price": message["price"],
+            "timestamp": message["time"],
+            "exchange": message["exchange"],
+            "quote_type": message["quote_type"],
+            "change_percent": message["change_percent"],
+            "change": message["change"],
+            "price_hint": message["price_hint"],
+        })
+        # Safe emit from background task
         socketio.emit("stock_update", message)
 
+    # Note: yf.WebSocket blocks. Using eventlet requires monkey patching (handled in Step 2)
     with yf.WebSocket() as ws:
         ws.subscribe(["NVDA"])
         ws.listen(handler)
 
-
-# Max records stored in the database at any given point of time
 MAX_RECORDS = 100
-
-from queue import Empty
-
 
 def db_queue_worker():
     with app.app_context():
         buffer = []
-
         while True:
             try:
-                stock_data = stock_queue.get(timeout=1)
-                stock = Stock(**stock_data)
-                buffer.append(stock)
+                # Use a small sleep inside the loop to avoid CPU spiking in async loops
+                socketio.sleep(0.1) 
+                
+                # Fetch data from the queue safely without blocking the event loop
+                if not stock_queue.empty():
+                    stock_data = stock_queue.get_nowait()
+                    stock = Stock(**stock_data)
+                    buffer.append(stock)
 
-                if len(buffer) >= MAX_RECORDS:
-                    count = Stock.query.count()
+                    if len(buffer) >= MAX_RECORDS:
+                        count = Stock.query.count()
+                        if count >= MAX_RECORDS:
+                            db.session.query(Stock).delete()
+                            db.session.commit() # Fixed typo: db.commit() -> db.session.commit()
 
-                    # If there are more than 500 records delete
-                    if count >= MAX_RECORDS:
-                        db.session.query(Stock).delete()
-                        db.commit()
-
-                    # Bulk save records to the database
-                    db.session.bulk_save_objects(buffer)
-
-                    # commit to saving bulk objects as well as deleting prior data
-                    db.session.commit()
-
-                    buffer.clear()
-
-            except Empty:
-                continue
-
+                        db.session.bulk_save_objects(buffer)
+                        db.session.commit()
+                        buffer.clear()
             except Exception as e:
                 db.session.rollback()
+                socketio.sleep(1) # Back off on database error
 
-
-
-# registering filters
+# Move filter and table creation here
 def datetime_from_timestamp(ts):
     return datetime.fromtimestamp(ts).strftime("%d %b, %H:%M")
-
 app.jinja_env.filters["datetime_from_timestamp"] = datetime_from_timestamp
 
 with app.app_context():
     db.create_all()
 
-# Stock Stream & update
+# REPLACE Thread.start() with socketio.start_background_task
+@socketio.on('connect')
+def handle_connect():
+    print("Client connected")
+
+# Start background tasks safely through SocketIO
 socketio.start_background_task(stock_stream)
 socketio.start_background_task(db_queue_worker)
-
 
 if __name__ == "__main__":
     socketio.run(
@@ -159,4 +99,3 @@ if __name__ == "__main__":
         port=5000,
         debug=os.environ.get("ENV", "development") == "development",
     )
-

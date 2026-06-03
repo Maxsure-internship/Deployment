@@ -149,7 +149,9 @@ endblock %} {% block content %}
 />
 
 <script>
-  var socket = io();
+  var socket = io({
+    transports: ["websocket", "polling"],
+  });
   let candleSeries = [];
 
   // Track high/low stats for the panel layout
