@@ -146,13 +146,10 @@ app.jinja_env.filters["datetime_from_timestamp"] = datetime_from_timestamp
 
 with app.app_context():
     db.create_all()
-# Stock Stream
-stock_stream_thread = Thread(target=stock_stream, daemon=True)
-stock_stream_thread.start()
 
-# DB worker
-db_worker = Thread(target=db_queue_worker, daemon=True)
-db_worker.start()
+# Stock Stream & update
+socketio.start_background_task(stock_stream)
+socketio.start_background_task(db_queue_worker)
 
 
 if __name__ == "__main__":
