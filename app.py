@@ -136,8 +136,7 @@ def db_queue_worker():
             except Exception as e:
                 db.session.rollback()
 
-with app.app_context():
-    db.create_all()
+
 
 # registering filters
 def datetime_from_timestamp(ts):
@@ -145,6 +144,8 @@ def datetime_from_timestamp(ts):
 
 app.jinja_env.filters["datetime_from_timestamp"] = datetime_from_timestamp
 
+with app.app_context():
+    db.create_all()
 # Stock Stream
 stock_stream_thread = Thread(target=stock_stream, daemon=True)
 stock_stream_thread.start()
@@ -153,11 +154,12 @@ stock_stream_thread.start()
 db_worker = Thread(target=db_queue_worker, daemon=True)
 db_worker.start()
 
+
 if __name__ == "__main__":
     socketio.run(
         app,
         host="0.0.0.0",
-        port=8000,
+        port=5000,
         debug=os.environ.get("ENV", "development") == "development",
     )
 
